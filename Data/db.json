@@ -1,0 +1,34 @@
+{
+  "notes": [
+    {
+      "title": "Frontend",
+      "task": "Set Appbar alignment\nMove cart from right to left ",
+      "status": "pending",
+      "id": "8273"
+    },
+    {
+      "title": "Backend",
+      "task": "Create a new API for user authentication ",
+      "status": "pending",
+      "id": "3e89"
+    },
+    {
+      "title": "Designer",
+      "task": "Create mock designs for banners",
+      "status": "cancel",
+      "id": "eebc"
+    },
+    {
+      "title": "Designer",
+      "task": "Create svg for website logo",
+      "status": "done",
+      "id": "da1c"
+    },
+    {
+      "id": "4b54",
+      "title": "Frontend",
+      "task": "Add banner",
+      "status": "new"
+    }
+  ]
+}
