@@ -1,6 +1,6 @@
 ### Starter Project for the Material UI playlist
 
-![Project Preview](./images/project-preview.png)
+![Project Preview](./image/project-preview.png)
 
 Download the code & run **npm install** to install dependencies before starting the app.
 
