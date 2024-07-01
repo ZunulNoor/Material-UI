@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { useState, useEffect } from 'react';
 import {
-    Card,
-    CardContent,
-    CardHeader,
     IconButton,
     makeStyles,
     Modal,
@@ -24,17 +29,17 @@ import Box from '@mui/material/Box';
 
 const useStyles = makeStyles({
     test: {
-        border: (newnote) => {
-            if (newnote.status === 'new') {
+        border: (notes) => {
+            if (notes.status === 'new') {
                 return '2px dotted green';
             }
-            if (newnote.status === 'pending') {
+            if (notes.status === 'pending') {
                 return '2px dotted red';
             }
-            if (newnote.status === 'cancel') {
+            if (notes.status === 'cancel') {
                 return '2px solid red';
             }
-            if (newnote.status === 'done') {
+            if (notes.status === 'done') {
                 return '2px solid green';
             }
             return 'none';
@@ -48,6 +53,20 @@ const useStyles = makeStyles({
     radioGroup: {
         display: 'flex',
         justifyContent: 'space-between',
+    },
+    updateiconbtn: {
+        color:'green',
+        '&:hover':{
+            backgroundColor:'green',
+            color:'white'
+        }
+    },
+    deleteiconbtn: {
+        color:'red',
+        '&:hover':{
+            backgroundColor:'red',
+            color:'white'
+        }
     }
 });
 
@@ -65,20 +84,42 @@ const style = {
     pb: 3,
 };
 
-const TaskCard = ({ newnote, handleDelete }) => {
-    const classes = useStyles(newnote);
+
+export default function Table2() {
+    const classes = useStyles();
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [titleError, setTitleError] = useState(false);
     const [task, setTask] = useState('');
     const [taskError, setTaskError] = useState(false);
     const [status, setStatus] = useState('new');
-    const handleOpen = () => {
-        setTitle(newnote.title);
-        setTask(newnote.task);
-        setStatus(newnote.status);
-        setOpen(true);
+    const [notes, setNotes] = useState([])
+    const [currentNoteId, setCurrentNoteId] = useState(null);
+    useEffect(() => {
+        fetch('http://localhost:8080/notes')
+            .then(res => res.json())
+            .then(data => setNotes(data))
+        // .catch(err => console.log(err.message))
+    })
+
+    const handleDelete = async (id) => {
+        await fetch('http://localhost:8080/notes/' + id, {
+            method: 'DELETE'
+        })
+        const newNotes = notes.filter(notes => notes.id !== id)
+        setNotes(newNotes)
+    }
+    const handleOpen = (id) => {
+        const noteToEdit = notes.find(note => note.id === id);
+        if (noteToEdit) {
+            setCurrentNoteId(id);
+            setTitle(noteToEdit.title);
+            setTask(noteToEdit.task);
+            setStatus(noteToEdit.status);
+            setOpen(true);
+        }
     };
+
 
     const handleClose = () => {
         setOpen(false);
@@ -96,12 +137,19 @@ const TaskCard = ({ newnote, handleDelete }) => {
         }
 
         if (title.trim() && task.trim()) {
-            fetch(`http://localhost:8080/notes/${newnote.id}`, {
+            fetch(`http://localhost:8080/notes/${currentNoteId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, task, status })
             })
                 .then(() => {
+                    const updatedNotes = notes.map(note => {
+                        if (note.id === currentNoteId) {
+                            return { ...note, title, task, status };
+                        }
+                        return note;
+                    });
+                    setNotes(updatedNotes);
                     handleClose();
                 })
                 .catch(error => console.error('Error updating note:', error));
@@ -109,28 +157,60 @@ const TaskCard = ({ newnote, handleDelete }) => {
     };
 
     return (
-        <div>
-            <Card elevation={1} className={classes.test}>
-                <CardHeader
-                    action={
-                        <>
-                            <IconButton onClick={() => handleDelete(newnote.id)}>
-                                <DeleteOutlineIcon />
-                            </IconButton>
-                            <IconButton onClick={handleOpen}>
-                                <AutorenewIcon />
-                            </IconButton>
-                        </>
-                    }
-                    title={newnote.title}
-                    subheader={newnote.status}
-                />
-                <CardContent>
-                    <Typography variant='body2' color="textSecondary">
-                        {newnote.task}
-                    </Typography>
-                </CardContent>
-            </Card>
+        <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell
+                            align="center"
+                        >ID</TableCell>
+                        <TableCell
+                            align="center"
+                        >Title</TableCell>
+                        <TableCell
+                        align="center"
+                        >Task</TableCell>
+                        <TableCell
+                            align="center"
+                        >Status</TableCell>
+                        <TableCell
+                            align="center"
+                        >Action</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {notes.map((notes, key) => (
+
+                        <TableRow
+                            key={notes.id}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                            <TableCell
+                                align="center"
+                            >{key + 1}</TableCell>
+                            <TableCell
+                                align="center"
+                            >{notes.title}</TableCell>
+                            <TableCell
+                                align="center"
+                            >{notes.task}</TableCell>
+                            <TableCell
+                                align="center"
+                            >{notes.status}</TableCell>
+                            <TableCell
+                                align="center"
+                            >
+                                <IconButton className={classes.deleteiconbtn} onClick={() => handleDelete(notes.id)}>
+                                    <DeleteOutlineIcon />
+                                </IconButton>
+                                <IconButton className={classes.updateiconbtn} onClick={() => handleOpen(notes.id)}>
+                                    <AutorenewIcon />
+                                </IconButton>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -197,8 +277,6 @@ const TaskCard = ({ newnote, handleDelete }) => {
                     </Container>
                 </Box>
             </Modal>
-        </div>
+        </TableContainer>
     );
-};
-
-export default TaskCard;
+}

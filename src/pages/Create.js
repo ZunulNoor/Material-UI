@@ -4,7 +4,6 @@ import { Button, Container, FormControl, FormControlLabel, FormLabel, Radio, Rad
 import SendIcon from '@mui/icons-material/Send';
 import TextField from '@mui/material/TextField';
 import { makeStyles } from '@material-ui/core/styles';
-import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 const useStyles = makeStyles({
   field: {
@@ -15,21 +14,42 @@ const useStyles = makeStyles({
   radioGroup: {
     display: 'flex',
     justifyContent: 'space-between',
+  },
+  submit: {
+    color: 'black',
+    '&:hover': {
+      background: '#000',
+      color: 'white'
+    },
+  },
+  sendIcon: {
+    '&.animate': {
+      animation: '$bounceOutRight 3s',
+      color:'black'
+    }
+  },
+  '@keyframes bounceOutRight': {
+    '0%': {
+      transform: 'translateX(0)'
+    },
+    '100%': {
+      transform: 'translateX(300px)',
+      opacity: 0
+    }
   }
 });
 
-export default function Create({handleClose}) {
+export default function Create({ handleClose }) {
   const classes = useStyles();
-  const history = useHistory();
   const [title, setTitle] = useState('');
   const [titleError, setTitleError] = useState(false);
   const [task, setTask] = useState('');
   const [taskError, setTaskError] = useState(false);
   const [status, setStatus] = useState('new');
+  const [submitting, setSubmitting] = useState(false); 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleClose()
     setTitleError(false);
     setTaskError(false);
     if (title === '') {
@@ -39,11 +59,20 @@ export default function Create({handleClose}) {
       setTaskError(true);
     }
     if (title && task) {
-      fetch('http://localhost:8080/notes', {
-        method: 'POST',
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ title, task, status })
-      }).then(() => history.push('/'));
+      setSubmitting(true);
+      setTimeout(() => {
+        fetch('http://localhost:8080/notes', {
+          method: 'POST',
+          headers: { "Content-type": "application/json" },
+          body: JSON.stringify({ title, task, status })
+        }).then(() => {
+          handleClose(); 
+        }).catch(err => {
+          console.error('Error while submitting:', err);
+        }).finally(() => {
+          setSubmitting(false);
+        });
+      }, 2800); 
     }
   };
 
@@ -93,11 +122,11 @@ export default function Create({handleClose}) {
             </div>
           </RadioGroup>
         </FormControl>
+
         <Button
           type="submit"
-          color='primary'
-          variant='contained'
-          endIcon={<SendIcon />}
+          className={classes.submit}
+          endIcon={<SendIcon className={`${classes.sendIcon} ${submitting ? 'animate' : ''}`} />}
         >
           Submit
         </Button>

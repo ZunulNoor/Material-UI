@@ -8,6 +8,8 @@ import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Create from '../pages/Create';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+// import ViewInArIcon from '@mui/icons-material/ViewInAr';
 
 const useStyles = makeStyles((theme) => ({
     page: {
@@ -36,6 +38,13 @@ const useStyles = makeStyles((theme) => ({
     toolbar: theme.mixins.toolbar,
     topButton: {
         flexGrow: 1,
+    },
+    addicon:{
+        color:'green',
+        '&:hover':{
+            background:'green',
+            color:'white'
+        }
     }
 }));
 
@@ -83,6 +92,16 @@ export default function Layout({ children }) {
             icon: <GamepadIcon color="secondary" />,
             path: '/custom-style',
         },
+        {
+            text: 'Map Integration',
+            icon: <MyLocationIcon color="secondary" />,
+            path: '/map-integration',
+        },
+        // {
+        //     text: 'Three Js',
+        //     icon: <ViewInArIcon color="secondary" />,
+        //     path: '/3d',
+        // },
     ];
     const [open, setOpen] = useState(false);
     const handleOpen = () => {
@@ -100,9 +119,14 @@ export default function Layout({ children }) {
                             <FormatListBulletedIcon />
                         </Typography>
                         <Typography>
-                            <Button onClick={handleOpen}>
-                                <AddIcon />
-                            </Button>
+                            {location.pathname === '/'
+                                ? (
+                                    <Button className={classes.addicon} onClick={handleOpen}>
+                                        <AddIcon />
+                                    </Button>
+                                )
+                                : null
+                            }
                         </Typography>
                         <Modal
                             open={open}
@@ -128,7 +152,7 @@ export default function Layout({ children }) {
                 >
                     <div>
                         <Typography variant="h5" className={classes.title}>
-                            Material UI 
+                            Material UI
                         </Typography>
                     </div>
                     <List>

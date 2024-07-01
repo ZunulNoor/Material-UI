@@ -8,6 +8,8 @@ import CustomStyle from './pages/CustomStyle';
 import { createTheme, ThemeProvider } from '@material-ui/core';
 import { purple } from '@material-ui/core/colors';
 import Layout from './Component/Layout';
+import MapIntegration from './pages/MapIntegration';
+// import ThreeScene from './pages/ThreeD';
 
 const theme = createTheme({
   palette: {
@@ -42,6 +44,12 @@ function App() {
             <Route path="/custom-style">
               <CustomStyle />
             </Route>
+            <Route path="/map-integration">
+              <MapIntegration />
+            </Route>
+            {/* <Route path="/3d">
+              <ThreeScene />
+            </Route> */}
           </Switch>
         </Layout>
       </Router>
