@@ -73,5 +73,5 @@ class MapIntegration extends Component {
 }
 
 export default GoogleApiWrapper({
-  apiKey: 'AIzaSyBw4FA4NMKEzBoTwXZI8c2gHf-wf9juUKs',
+  apiKey: 'Your API key',
 })(MapIntegration);
