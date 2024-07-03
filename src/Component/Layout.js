@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { AppBar, Button, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography, makeStyles } from '@material-ui/core';
 import { SubjectOutlined } from '@material-ui/icons';
 import GamepadIcon from '@mui/icons-material/Gamepad';
@@ -39,11 +39,11 @@ const useStyles = makeStyles((theme) => ({
     topButton: {
         flexGrow: 1,
     },
-    addicon:{
-        color:'green',
-        '&:hover':{
-            background:'green',
-            color:'white'
+    addicon: {
+        color: 'green',
+        '&:hover': {
+            background: 'green',
+            color: 'white'
         }
     }
 }));
@@ -104,6 +104,18 @@ export default function Layout({ children }) {
         // },
     ];
     const [open, setOpen] = useState(false);
+    const buttonRef = useRef(null);
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.altKey && event.key === 'n') {
+                buttonRef.current.click();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
     const handleOpen = () => {
         setOpen(true);
     };
@@ -121,24 +133,25 @@ export default function Layout({ children }) {
                         <Typography>
                             {location.pathname === '/'
                                 ? (
-                                    <Button className={classes.addicon} onClick={handleOpen}>
+                                    <Button className={classes.addicon} ref={buttonRef} onClick={handleOpen}>
                                         <AddIcon />
                                     </Button>
                                 )
                                 : null
                             }
                         </Typography>
-                        <Modal
+
+                        <Create handleClose={handleClose} open={open} />
+                        {/* <Modal
                             open={open}
                             onClose={handleClose}
                             aria-labelledby="child-modal-title"
                             aria-describedby="child-modal-description"
                         >
                             <Box sx={style}>
-                                <Create handleClose={handleClose} />
-                                {/* <Button onClick={handleClose}><ClearIcon /></Button> */}
+                                <Button onClick={handleClose}><ClearIcon /></Button>
                             </Box>
-                        </Modal>
+                        </Modal> */}
                     </Toolbar>
                 </AppBar>
 

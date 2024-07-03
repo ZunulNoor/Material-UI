@@ -10,7 +10,6 @@ import { useState, useEffect } from 'react';
 import {
     IconButton,
     makeStyles,
-    Modal,
     Typography,
     Button,
     Container,
@@ -25,6 +24,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 const useStyles = makeStyles({
@@ -55,35 +60,55 @@ const useStyles = makeStyles({
         justifyContent: 'space-between',
     },
     updateiconbtn: {
-        color:'green',
-        '&:hover':{
-            backgroundColor:'green',
-            color:'white'
+        color: 'green',
+        '&:hover': {
+            backgroundColor: 'green',
+            color: 'white'
+        },
+    },
+    autorenewicon: {
+        '&.animate': {
+            animation: '$rotate 2s linear infinite'
+        },
+    },
+    '@keyframes rotate': {
+        '0%': {
+            transform: 'rotate(0deg)'
+        },
+        '100%': {
+            transform: 'rotate(360deg)'
         }
     },
     deleteiconbtn: {
-        color:'red',
-        '&:hover':{
-            backgroundColor:'red',
-            color:'white'
+        color: 'red',
+        '&:hover': {
+            backgroundColor: 'red',
+            color: 'white'
+        }
+    },
+    submit: {
+        color: 'black',
+        '&:hover': {
+            background: '#000',
+            color: 'white'
+        },
+    },
+    sendIcon: {
+        '&.animate': {
+            animation: '$bounceOutRight 1s',
+            color: 'black'
+        }
+    },
+    '@keyframes bounceOutRight': {
+        '0%': {
+            transform: 'translateX(0)'
+        },
+        '100%': {
+            transform: 'translateX(10px)',
+            opacity: 0
         }
     }
 });
-
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    pt: 2,
-    px: 4,
-    pb: 3,
-};
-
 
 export default function Table2() {
     const classes = useStyles();
@@ -93,25 +118,30 @@ export default function Table2() {
     const [task, setTask] = useState('');
     const [taskError, setTaskError] = useState(false);
     const [status, setStatus] = useState('new');
-    const [notes, setNotes] = useState([])
+    const [notes, setNotes] = useState([]);
     const [currentNoteId, setCurrentNoteId] = useState(null);
+    const [update, setUpdate] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
     useEffect(() => {
         fetch('http://localhost:8080/notes')
             .then(res => res.json())
             .then(data => setNotes(data))
-        // .catch(err => console.log(err.message))
-    })
+            .catch(err => console.log(err.message));
+    }, []);
 
     const handleDelete = async (id) => {
         await fetch('http://localhost:8080/notes/' + id, {
             method: 'DELETE'
-        })
-        const newNotes = notes.filter(notes => notes.id !== id)
-        setNotes(newNotes)
-    }
+        });
+        const newNotes = notes.filter(note => note.id !== id);
+        setNotes(newNotes);
+    };
+
     const handleOpen = (id) => {
         const noteToEdit = notes.find(note => note.id === id);
         if (noteToEdit) {
+            setUpdate(true);
             setCurrentNoteId(id);
             setTitle(noteToEdit.title);
             setTask(noteToEdit.task);
@@ -120,10 +150,11 @@ export default function Table2() {
         }
     };
 
-
     const handleClose = () => {
         setOpen(false);
+        setUpdate(false);
     };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setTitleError(false);
@@ -137,146 +168,132 @@ export default function Table2() {
         }
 
         if (title.trim() && task.trim()) {
-            fetch(`http://localhost:8080/notes/${currentNoteId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, task, status })
-            })
-                .then(() => {
-                    const updatedNotes = notes.map(note => {
-                        if (note.id === currentNoteId) {
-                            return { ...note, title, task, status };
-                        }
-                        return note;
-                    });
-                    setNotes(updatedNotes);
-                    handleClose();
+            setSubmitting(true);
+            setTimeout(() => {
+                fetch(`http://localhost:8080/notes/${currentNoteId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, task, status })
                 })
-                .catch(error => console.error('Error updating note:', error));
+                    .then(() => {
+                        const updatedNotes = notes.map(note => {
+                            if (note.id === currentNoteId) {
+                                return { ...note, title, task, status };
+                            }
+                            return note;
+                        });
+                        setNotes(updatedNotes);
+                        handleClose();
+                    })
+                    .catch(error => console.error('Error updating note:', error))
+                    .finally(() => {
+                        setSubmitting(false);
+                    });
+            }, 1000);
         }
     };
 
     return (
-        <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell
-                            align="center"
-                        >ID</TableCell>
-                        <TableCell
-                            align="center"
-                        >Title</TableCell>
-                        <TableCell
-                        align="center"
-                        >Task</TableCell>
-                        <TableCell
-                            align="center"
-                        >Status</TableCell>
-                        <TableCell
-                            align="center"
-                        >Action</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {notes.map((notes, key) => (
-
-                        <TableRow
-                            key={notes.id}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                            <TableCell
-                                align="center"
-                            >{key + 1}</TableCell>
-                            <TableCell
-                                align="center"
-                            >{notes.title}</TableCell>
-                            <TableCell
-                                align="center"
-                            >{notes.task}</TableCell>
-                            <TableCell
-                                align="center"
-                            >{notes.status}</TableCell>
-                            <TableCell
-                                align="center"
-                            >
-                                <IconButton className={classes.deleteiconbtn} onClick={() => handleDelete(notes.id)}>
-                                    <DeleteOutlineIcon />
-                                </IconButton>
-                                <IconButton className={classes.updateiconbtn} onClick={() => handleOpen(notes.id)}>
-                                    <AutorenewIcon />
-                                </IconButton>
-                            </TableCell>
+        <>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="center">ID</TableCell>
+                            <TableCell align="center">Title</TableCell>
+                            <TableCell align="center">Task</TableCell>
+                            <TableCell align="center">Status</TableCell>
+                            <TableCell align="center">Action</TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <Modal
+                    </TableHead>
+                    <TableBody>
+                        {notes.map((note, key) => (
+                            <TableRow key={note.id}>
+                                <TableCell align="center">{key + 1}</TableCell>
+                                <TableCell align="center">{note.title}</TableCell>
+                                <TableCell align="center">{note.task}</TableCell>
+                                <TableCell align="center">{note.status}</TableCell>
+                                <TableCell align="center">
+                                    <IconButton className={classes.deleteiconbtn} onClick={() => handleDelete(note.id)}>
+                                        <DeleteOutlineIcon />
+                                    </IconButton>
+                                    <IconButton className={classes.updateiconbtn} onClick={() => handleOpen(note.id)}>
+                                        <AutorenewIcon className={`${classes.autorenewicon} ${currentNoteId === note.id && update ? 'animate' : ''}`} />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <Dialog
                 open={open}
                 onClose={handleClose}
-                aria-labelledby="child-modal-title"
-                aria-describedby="child-modal-description"
+                aria-labelledby="child-dialog-title"
+                aria-describedby="child-dialog-description"
             >
-                <Box sx={style}>
-                    <Container>
-                        <Typography
-                            variant='h6'
-                            color='textSecondary'
-                            component='h2'
-                            gutterBottom
-                        >
-                            Update Task
-                        </Typography>
-                        <form noValidate autoComplete='off' onSubmit={handleSubmit}>
-                            <TextField
-                                className={classes.field}
-                                label="Title"
-                                variant='outlined'
-                                color='secondary'
-                                fullWidth
-                                required
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                error={titleError}
-                            />
-                            <TextField
-                                className={classes.field}
-                                label="Task"
-                                variant='outlined'
-                                color='secondary'
-                                fullWidth
-                                required
-                                multiline
-                                minRows={4}
-                                value={task}
-                                onChange={(e) => setTask(e.target.value)}
-                                error={taskError}
-                            />
-                            <FormControl component="fieldset" className={classes.field}>
-                                <FormLabel component="legend">Status</FormLabel>
-                                <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
-                                    <div className={classes.radioGroup}>
-                                        <FormControlLabel value="new" control={<Radio />} label="New" />
-                                        <FormControlLabel value="pending" control={<Radio />} label="Pending" />
-                                    </div>
-                                    <div className={classes.radioGroup}>
-                                        <FormControlLabel value="done" control={<Radio />} label="Done" />
-                                        <FormControlLabel value="cancel" control={<Radio />} label="Cancel" />
-                                    </div>
-                                </RadioGroup>
-                            </FormControl>
-                            <Button
-                                type="submit"
-                                color='primary'
-                                variant='contained'
-                                endIcon={<SendIcon />}
-                            >
-                                Submit
-                            </Button>
-                        </form>
-                    </Container>
-                </Box>
-            </Modal>
-        </TableContainer>
+                <DialogTitle id="child-dialog-title">Update Task</DialogTitle>
+                <CloseIcon
+                    aria-label="close"
+                    onClick={handleClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 13,
+                        top: 15,
+                        color: (theme) => theme.palette.grey[500],
+                        cursor: 'pointer'
+                    }}
+                />
+                <DialogContent dividers>
+                    <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+                        <TextField
+                            className={classes.field}
+                            label="Title"
+                            variant="outlined"
+                            color="secondary"
+                            fullWidth
+                            required
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            error={titleError}
+                        />
+                        <TextField
+                            className={classes.field}
+                            label="Task"
+                            variant="outlined"
+                            color="secondary"
+                            fullWidth
+                            required
+                            multiline
+                            minRows={4}
+                            value={task}
+                            onChange={(e) => setTask(e.target.value)}
+                            error={taskError}
+                        />
+                        <FormControl component="fieldset" className={classes.field}>
+                            <FormLabel component="legend">Status</FormLabel>
+                            <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
+                                <div className={classes.radioGroup}>
+                                    <FormControlLabel value="new" control={<Radio />} label="New" />
+                                    <FormControlLabel value="pending" control={<Radio />} label="Pending" />
+                                </div>
+                                <div className={classes.radioGroup}>
+                                    <FormControlLabel value="done" control={<Radio />} label="Done" />
+                                    <FormControlLabel value="cancel" control={<Radio />} label="Cancel" />
+                                </div>
+                            </RadioGroup>
+                        </FormControl>
+                    </form>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={handleSubmit}
+                        endIcon={<SendIcon className={`${classes.sendIcon} ${submitting ? 'animate' : ''}`} />}
+                    >
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }

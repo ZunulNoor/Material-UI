@@ -9,6 +9,7 @@ import { createTheme, ThemeProvider } from '@material-ui/core';
 import { purple } from '@material-ui/core/colors';
 import Layout from './Component/Layout';
 import MapIntegration from './pages/MapIntegration';
+import ResponsiveDrawer from './Component/ResponsiveDrawer';
 // import ThreeScene from './pages/ThreeD';
 
 const theme = createTheme({
@@ -22,7 +23,8 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <>
+      {/* <ThemeProvider theme={theme}>
       <Router>
         <Layout>
           <Switch>
@@ -47,13 +49,17 @@ function App() {
             <Route path="/map-integration">
               <MapIntegration />
             </Route>
-            {/* <Route path="/3d">
+            <Route path="/3d">
               <ThreeScene />
-            </Route> */}
+            </Route>
           </Switch>
         </Layout>
       </Router>
-    </ThemeProvider>
+    </ThemeProvider> */}
+
+      <ResponsiveDrawer />
+    </>
+
   );
 }
 

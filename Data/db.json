@@ -1,22 +1,16 @@
 {
   "notes": [
     {
-      "id": "c72b",
-      "title": "Frontend",
-      "task": "Create Carousel",
-      "status": "new"
+      "title": "FE",
+      "task": "Banner\n",
+      "status": "new",
+      "id": "2eb5"
     },
     {
-      "id": "c400",
-      "title": "Designer",
-      "task": "Design Carousel",
-      "status": "new"
-    },
-    {
-      "id": "aa35",
-      "title": "heheh",
-      "task": "fbdn",
-      "status": "new"
+      "title": "BE",
+      "task": "Cart API",
+      "status": "pending",
+      "id": "08b6"
     }
   ]
 }
