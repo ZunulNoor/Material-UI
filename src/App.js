@@ -24,38 +24,7 @@ const theme = createTheme({
 function App() {
   return (
     <>
-      {/* <ThemeProvider theme={theme}>
-      <Router>
-        <Layout>
-          <Switch>
-            <Route exact path="/">
-              <Notes />
-            </Route>
-            <Route path="/create">
-              <Create />
-            </Route>
-            <Route path="/typography">
-              <TypographyPage />
-            </Route>
-            <Route path="/button">
-              <ButtonPage />
-            </Route>
-            <Route path="/icon">
-              <IconPage />
-            </Route>
-            <Route path="/custom-style">
-              <CustomStyle />
-            </Route>
-            <Route path="/map-integration">
-              <MapIntegration />
-            </Route>
-            <Route path="/3d">
-              <ThreeScene />
-            </Route>
-          </Switch>
-        </Layout>
-      </Router>
-    </ThemeProvider> */}
+
 
       <ResponsiveDrawer />
     </>
